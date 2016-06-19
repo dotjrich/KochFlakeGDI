@@ -40,7 +40,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
         return 1;
     }
 
-    HWND hWnd = CreateWindow(g_szWindowClassName, g_szWindowTitle, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 500, 100, NULL, NULL, hInstance, NULL);
+    HWND hWnd = CreateWindow(g_szWindowClassName, g_szWindowTitle, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 600, 600, NULL, NULL, hInstance, NULL);
     if (!hWnd) {
         MessageBox(NULL, _T("Failed to create window."), g_szWindowTitle, NULL);
         return 1;
@@ -63,15 +63,8 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
 LRESULT CALLBACK
 WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    PAINTSTRUCT ps;
-    HDC hdc;
-    TCHAR greeting[] = _T("Hello, world!");
-
     switch (msg) {
     case WM_PAINT:
-        hdc = BeginPaint(hWnd, &ps);
-        TextOut(hdc, 5, 5, greeting, _tcslen(greeting));
-        EndPaint(hWnd, &ps);
         break;
         
     case WM_DESTROY:
