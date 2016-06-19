@@ -63,18 +63,22 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
 LRESULT CALLBACK
 WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+    int ret = 0;
+
     switch (msg) {
     case WM_PAINT:
+        ret = 0;
         break;
         
     case WM_DESTROY:
         PostQuitMessage(0);
+        ret = 0;
         break;
 
     default:
-        return DefWindowProc(hWnd, msg, wParam, lParam);
+        ret = DefWindowProc(hWnd, msg, wParam, lParam);
         break;
     }
 
-    return 0;
+    return ret;
 }
