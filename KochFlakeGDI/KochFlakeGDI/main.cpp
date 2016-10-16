@@ -18,6 +18,9 @@ TCHAR g_szWindowTitle[] = _T("Koch Flake GDI+");
 LRESULT CALLBACK
 WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
+void
+OnPaint(HDC hdc);
+
 // -----------------------------------------------------------------------
 
 int WINAPI
@@ -56,10 +59,18 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
 
+    bool run = true;
     MSG msg;
-    while (GetMessage(&msg, NULL, 0, 0)) {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
+    while (run) {
+        if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE)) {
+            if (msg.message == WM_QUIT) {
+                run = false;
+            }
+
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        } else {
+        }
     }
 
     Gdiplus::GdiplusShutdown(gdiplusToken);
@@ -73,9 +84,14 @@ LRESULT CALLBACK
 WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     int ret = 0;
+    HDC hdc;
+    PAINTSTRUCT ps;
 
     switch (msg) {
     case WM_PAINT:
+        hdc = BeginPaint(hWnd, &ps);
+        OnPaint(hdc);
+        EndPaint(hWnd, &ps);
         ret = 0;
         break;
         
@@ -90,4 +106,11 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
 
     return ret;
+}
+
+// -----------------------------------------------------------------------
+
+void
+OnPaint(HDC hdc)
+{
 }
