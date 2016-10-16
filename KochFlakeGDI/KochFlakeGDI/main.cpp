@@ -5,6 +5,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <tchar.h>
+#include <objidl.h>
+#include <gdiplus.h>
 
 // -----------------------------------------------------------------------
 
@@ -21,6 +23,11 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 int WINAPI
 WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+    Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+    ULONG_PTR gdiplusToken;
+
+    Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+
     WNDCLASSEX wcex;
     wcex.cbSize         = sizeof(WNDCLASSEX);
     wcex.style          = CS_HREDRAW | CS_VREDRAW;
@@ -54,6 +61,8 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
+
+    Gdiplus::GdiplusShutdown(gdiplusToken);
 
     return (int)msg.wParam;
 }
