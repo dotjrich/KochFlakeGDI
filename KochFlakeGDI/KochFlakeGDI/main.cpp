@@ -8,12 +8,21 @@
 #include <objidl.h>
 #include <gdiplus.h>
 
+#include <vector>
+
+#include "Line.hpp"
+
 // -----------------------------------------------------------------------
 
 TCHAR g_szWindowClassName[] = _T("KochFlakeGDI");
 TCHAR g_szWindowTitle[] = _T("Koch Flake GDI+");
 
+std::vector<Line> g_lines;
+
 // -----------------------------------------------------------------------
+
+void
+InitGeometry();
 
 LRESULT CALLBACK
 WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -30,6 +39,8 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
     ULONG_PTR gdiplusToken;
 
     Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+
+    InitGeometry();
 
     WNDCLASSEX wcex;
     wcex.cbSize         = sizeof(WNDCLASSEX);
@@ -73,9 +84,23 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
         }
     }
 
+    // XXX: Need to clear out the vector, so the m_pen destructors run before we shutdown GDI+.
+    g_lines.clear();
+
     Gdiplus::GdiplusShutdown(gdiplusToken);
 
     return (int)msg.wParam;
+}
+
+// -----------------------------------------------------------------------
+
+void
+InitGeometry()
+{
+    // Initialize our lines.
+    g_lines.push_back(Line(Gdiplus::Point(100, 500), Gdiplus::Point(300, 100), Gdiplus::Color(255, 255, 0, 0)));
+    g_lines.push_back(Line(Gdiplus::Point(300, 100), Gdiplus::Point(500, 500), Gdiplus::Color(255, 0, 255, 0)));
+    g_lines.push_back(Line(Gdiplus::Point(500, 500), Gdiplus::Point(100, 500), Gdiplus::Color(255, 0, 0, 255)));
 }
 
 // -----------------------------------------------------------------------
@@ -113,4 +138,8 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 void
 OnPaint(HDC hdc)
 {
+    std::vector<Line>::iterator i;
+    for (i = g_lines.begin(); i != g_lines.end(); ++i) {
+        i->draw(hdc);
+    }
 }
