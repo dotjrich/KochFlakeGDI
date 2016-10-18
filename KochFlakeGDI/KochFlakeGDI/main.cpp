@@ -98,9 +98,9 @@ void
 InitGeometry()
 {
     // Initialize our lines.
-    g_lines.push_back(Line(Gdiplus::Point(100, 500), Gdiplus::Point(300, 100), Gdiplus::Color(255, 255, 0, 0)));
-    g_lines.push_back(Line(Gdiplus::Point(300, 100), Gdiplus::Point(500, 500), Gdiplus::Color(255, 0, 255, 0)));
-    g_lines.push_back(Line(Gdiplus::Point(500, 500), Gdiplus::Point(100, 500), Gdiplus::Color(255, 0, 0, 255)));
+    g_lines.push_back(Line(Gdiplus::PointF(100.0f, 500.0f), Gdiplus::PointF(300.0f, 100.0f), Gdiplus::Color(255, 255, 0, 0)));
+    g_lines.push_back(Line(Gdiplus::PointF(300.0f, 100.0f), Gdiplus::PointF(500.0f, 500.0f), Gdiplus::Color(255, 0, 255, 0)));
+    g_lines.push_back(Line(Gdiplus::PointF(500.0f, 500.0f), Gdiplus::PointF(100.0f, 500.0f), Gdiplus::Color(255, 0, 0, 255)));
 }
 
 // -----------------------------------------------------------------------

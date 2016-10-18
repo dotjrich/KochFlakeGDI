@@ -7,7 +7,7 @@
 
 #include "Line.hpp"
 
-Line::Line(const Gdiplus::Point& p1, const Gdiplus::Point& p2)
+Line::Line(const Gdiplus::PointF& p1, const Gdiplus::PointF& p2)
     : p1(p1), p2(p2), m_pen(Gdiplus::Color(255, 0, 0, 0))
 {
     m_initPen();
@@ -15,7 +15,7 @@ Line::Line(const Gdiplus::Point& p1, const Gdiplus::Point& p2)
 
 // -----------------------------------------------------------------------
 
-Line::Line(const Gdiplus::Point& p1, const Gdiplus::Point& p2, const Gdiplus::Color& color)
+Line::Line(const Gdiplus::PointF& p1, const Gdiplus::PointF& p2, const Gdiplus::Color& color)
     : p1(p1), p2(p2), m_pen(color)
 {
     m_initPen();

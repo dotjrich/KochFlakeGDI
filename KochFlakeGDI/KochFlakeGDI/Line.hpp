@@ -7,11 +7,11 @@
 
 class Line {
 public:
-    Gdiplus::Point p1;
-    Gdiplus::Point p2;
+    Gdiplus::PointF p1;
+    Gdiplus::PointF p2;
 
-    Line(const Gdiplus::Point& p1, const Gdiplus::Point& p2);
-    Line(const Gdiplus::Point& p1, const Gdiplus::Point& p2, const Gdiplus::Color& color);
+    Line(const Gdiplus::PointF& p1, const Gdiplus::PointF& p2);
+    Line(const Gdiplus::PointF& p1, const Gdiplus::PointF& p2, const Gdiplus::Color& color);
     Line(const Line& line);
     ~Line();
 
