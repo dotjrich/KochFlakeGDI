@@ -40,6 +40,21 @@ Line::~Line()
 
 // -----------------------------------------------------------------------
 
+Line&
+Line::operator=(Line& rhs)
+{
+    p1 = rhs.p1;
+    p2 = rhs.p2;
+
+    Gdiplus::Color color;
+    rhs.getColor(color);
+    m_pen.SetColor(color);
+
+    return *this;
+}
+
+// -----------------------------------------------------------------------
+
 void
 Line::setColor(const Gdiplus::Color& color)
 {

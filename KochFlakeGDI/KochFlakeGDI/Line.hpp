@@ -15,6 +15,8 @@ public:
     Line(const Line& line);
     ~Line();
 
+    Line& operator=(Line& rhs);
+
     void setColor(const Gdiplus::Color& color);
     void getColor(Gdiplus::Color& color) const;
     void draw(HDC hdc);

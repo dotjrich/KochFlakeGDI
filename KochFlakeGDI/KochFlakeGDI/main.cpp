@@ -165,7 +165,6 @@ void
 OnPaint(HDC hdc)
 {
     std::vector<Line>::iterator i;
-
     for (i = g_lines.begin(); i != g_lines.end(); ++i) {
         i->draw(hdc);
     }
