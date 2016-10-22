@@ -24,6 +24,9 @@ std::vector<Line> g_lines;
 void
 InitGeometry();
 
+void
+SplitLine(const Line& line, std::vector<Line>& dest);
+
 LRESULT CALLBACK
 WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -105,6 +108,29 @@ InitGeometry()
 
 // -----------------------------------------------------------------------
 
+void
+SplitLine(const Line& line, std::vector<Line>& dest)
+{
+    Gdiplus::Color color;
+    line.getColor(color);
+
+    Gdiplus::PointF p1 = line.p1;
+    Gdiplus::PointF p2 = line.p2;
+
+    // NOTE: we're not using fabs. That's so we properly add/subtract when segmenting the line.
+    Gdiplus::PointF delta((p2.X - p1.X) / 3.0f, (p2.Y - p1.Y) / 3.0f);
+
+    Line l1(p1, p1 + delta, color);
+    Line l2(l1.p2, l1.p2 + delta, color);
+    Line l3(l2.p2, p2, color);
+
+    dest.push_back(l1);
+    dest.push_back(l2);
+    dest.push_back(l3);
+}
+
+// -----------------------------------------------------------------------
+
 LRESULT CALLBACK
 WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -139,6 +165,7 @@ void
 OnPaint(HDC hdc)
 {
     std::vector<Line>::iterator i;
+
     for (i = g_lines.begin(); i != g_lines.end(); ++i) {
         i->draw(hdc);
     }
