@@ -73,7 +73,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
     wcex.hIcon          = LoadIcon(hInstance, IDI_APPLICATION);
     wcex.hIconSm        = LoadIcon(wcex.hInstance, IDI_APPLICATION);
     wcex.hCursor        = LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.hbrBackground  = (HBRUSH)GetStockObject(BLACK_BRUSH);
     wcex.lpszMenuName   = NULL;
     wcex.lpszClassName  = WINDOW_CLASS_NAME;
 
