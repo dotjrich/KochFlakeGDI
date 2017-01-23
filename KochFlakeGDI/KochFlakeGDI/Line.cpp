@@ -74,6 +74,7 @@ Line::getColor(Gdiplus::Color& color) const
 void
 Line::draw(HDC hdc)
 {
+    // TODO: Pull the graphics class out of here?
     Gdiplus::Graphics graphics(hdc);
     graphics.DrawLine(&m_pen, p1, p2);
 }
@@ -83,8 +84,7 @@ Line::draw(HDC hdc)
 void
 Line::m_initPen()
 {
-    // Nice, fat width.
-    m_pen.SetWidth(10);
+    m_pen.SetWidth(3);
 
     // Round caps, so the lines blend together nicely.
     m_pen.SetStartCap(Gdiplus::LineCapRound);
