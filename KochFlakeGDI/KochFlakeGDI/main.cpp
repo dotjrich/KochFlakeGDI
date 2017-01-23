@@ -8,15 +8,27 @@
 #include <objidl.h>
 #include <gdiplus.h>
 
+#include <cmath>
 #include <vector>
 
 #include "Line.hpp"
 
 // -----------------------------------------------------------------------
+// Constants.
+// -----------------------------------------------------------------------
 
-TCHAR g_szWindowClassName[] = _T("KochFlakeGDI");
-TCHAR g_szWindowTitle[] = _T("Koch Flake GDI+");
+const TCHAR WINDOW_CLASS_NAME[] = _T("KochFlakeGDI");
+const TCHAR WINDOW_TITLE[] = _T("Koch Flake GDI+");
+const int WINDOW_WIDTH = 800;
+const int WINDOW_HEIGHT = 800;
 
+const double SIXTY_DEG_IN_RAD = 3.14159 / 3.0;
+
+// -----------------------------------------------------------------------
+// Globals.
+// -----------------------------------------------------------------------
+
+// The list of lines to manipulate / draw.
 std::vector<Line> g_lines;
 
 // -----------------------------------------------------------------------
@@ -26,6 +38,9 @@ InitGeometry();
 
 void
 SplitLine(const Line& line, std::vector<Line>& dest);
+
+void
+BuildTriangle(const Line& base, std::vector<Line>& dest);
 
 LRESULT CALLBACK
 WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -57,16 +72,16 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
     wcex.hCursor        = LoadCursor(NULL, IDC_ARROW);
     wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszMenuName   = NULL;
-    wcex.lpszClassName  = g_szWindowClassName;
+    wcex.lpszClassName  = WINDOW_CLASS_NAME;
 
     if (!RegisterClassEx(&wcex)) {
-        MessageBox(NULL, _T("Failed to register window class."), g_szWindowTitle, NULL);
+        MessageBox(NULL, _T("Failed to register window class."), WINDOW_TITLE, NULL);
         return 1;
     }
 
-    HWND hWnd = CreateWindow(g_szWindowClassName, g_szWindowTitle, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 600, 600, NULL, NULL, hInstance, NULL);
+    HWND hWnd = CreateWindow(WINDOW_CLASS_NAME, WINDOW_TITLE, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, WINDOW_WIDTH, WINDOW_HEIGHT, NULL, NULL, hInstance, NULL);
     if (!hWnd) {
-        MessageBox(NULL, _T("Failed to create window."), g_szWindowTitle, NULL);
+        MessageBox(NULL, _T("Failed to create window."), WINDOW_TITLE, NULL);
         return 1;
     }
 
@@ -101,9 +116,9 @@ void
 InitGeometry()
 {
     // Initialize our lines.
-    g_lines.push_back(Line(Gdiplus::PointF(100.0f, 500.0f), Gdiplus::PointF(300.0f, 100.0f), Gdiplus::Color(255, 255, 0, 0)));
-    g_lines.push_back(Line(Gdiplus::PointF(300.0f, 100.0f), Gdiplus::PointF(500.0f, 500.0f), Gdiplus::Color(255, 0, 255, 0)));
-    g_lines.push_back(Line(Gdiplus::PointF(500.0f, 500.0f), Gdiplus::PointF(100.0f, 500.0f), Gdiplus::Color(255, 0, 0, 255)));
+    g_lines.push_back(Line(Gdiplus::PointF(200.0f, 500.0f), Gdiplus::PointF(400.0f, 100.0f), Gdiplus::Color(255, 255, 0, 0)));
+    g_lines.push_back(Line(Gdiplus::PointF(400.0f, 100.0f), Gdiplus::PointF(600.0f, 500.0f), Gdiplus::Color(255, 0, 255, 0)));
+    g_lines.push_back(Line(Gdiplus::PointF(600.0f, 500.0f), Gdiplus::PointF(200.0f, 500.0f), Gdiplus::Color(255, 0, 0, 255)));
 }
 
 // -----------------------------------------------------------------------
@@ -117,7 +132,6 @@ SplitLine(const Line& line, std::vector<Line>& dest)
     Gdiplus::PointF p1 = line.p1;
     Gdiplus::PointF p2 = line.p2;
 
-    // NOTE: we're not using fabs. That's so we properly add/subtract when segmenting the line.
     Gdiplus::PointF delta((p2.X - p1.X) / 3.0f, (p2.Y - p1.Y) / 3.0f);
 
     Line l1(p1, p1 + delta, color);
@@ -125,8 +139,40 @@ SplitLine(const Line& line, std::vector<Line>& dest)
     Line l3(l2.p2, p2, color);
 
     dest.push_back(l1);
-    dest.push_back(l2);
+    BuildTriangle(l2, dest);
     dest.push_back(l3);
+}
+
+// -----------------------------------------------------------------------
+
+// The name of this function is a bit misleading... we're not building a full triangle. Just the new parts to form the Koch curve.
+void
+BuildTriangle(const Line& base, std::vector<Line>& dest)
+{
+    Gdiplus::Color color;
+    base.getColor(color);
+
+    float deltaX = base.p2.X - base.p1.X;
+    float deltaY = base.p2.Y - base.p1.Y;
+    float length = ::sqrtf((deltaX * deltaX) + (deltaY * deltaY));
+    
+    /*
+        Some explaining...
+        atan2 will give us the angle between X+ and the specified point.
+        In this case, we're passing in the midpoint of our segment.
+        We're then rotating it 60 deg. This will lead us to the missing point of our triangle.
+    */
+    float t = ::atan2f(deltaY / 2.0f, deltaX / 2.0f) - SIXTY_DEG_IN_RAD;
+
+    // With the angle in hand, we can locate the missing top of our triangle.
+    Gdiplus::PointF topPoint(base.p1.X + (length * ::cosf(t)),
+                             base.p1.Y + (length * ::sinf(t)));
+
+    Line l1(base.p1, topPoint, color);
+    Line l2(topPoint, base.p2, color);
+
+    dest.push_back(l1);
+    dest.push_back(l2);
 }
 
 // -----------------------------------------------------------------------
