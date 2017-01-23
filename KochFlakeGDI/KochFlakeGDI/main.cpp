@@ -22,7 +22,7 @@ const TCHAR WINDOW_TITLE[] = _T("Koch Flake GDI+");
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 800;
 
-const double SIXTY_DEG_IN_RAD = 3.14159 / 3.0;
+const double SIXTY_DEG_IN_RAD = 3.14159f / 3.0f;
 
 // -----------------------------------------------------------------------
 // Globals.
@@ -41,6 +41,9 @@ SplitLine(const Line& line, std::vector<Line>& dest);
 
 void
 BuildTriangle(const Line& base, std::vector<Line>& dest);
+
+void
+Iterate();
 
 LRESULT CALLBACK
 WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -177,6 +180,20 @@ BuildTriangle(const Line& base, std::vector<Line>& dest)
 
 // -----------------------------------------------------------------------
 
+// Take the curve to the next level.
+void
+Iterate()
+{
+        std::vector<Line> newLines;
+        for (auto i = g_lines.begin(); i != g_lines.end(); ++i) {
+            SplitLine(*i, newLines);
+        }
+
+        g_lines = newLines;
+}
+
+// -----------------------------------------------------------------------
+
 LRESULT CALLBACK
 WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -196,6 +213,17 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
         PostQuitMessage(0);
         ret = 0;
         break;
+
+    case WM_KEYDOWN:
+        switch (wParam) {
+        case VK_SPACE:
+            Iterate();
+            InvalidateRect(hWnd, 0, TRUE);
+            break;
+
+        default:
+            break;
+        }
 
     default:
         ret = DefWindowProc(hWnd, msg, wParam, lParam);
