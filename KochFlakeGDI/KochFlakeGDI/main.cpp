@@ -221,6 +221,12 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
             InvalidateRect(hWnd, 0, TRUE);
             break;
 
+        case VK_ESCAPE:
+            g_lines.clear();
+            InitGeometry();
+            InvalidateRect(hWnd, 0, TRUE);
+            break;
+
         default:
             break;
         }
