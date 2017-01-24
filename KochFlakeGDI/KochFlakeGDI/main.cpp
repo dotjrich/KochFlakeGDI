@@ -11,8 +11,6 @@
 #include <cmath>
 #include <vector>
 
-#include "Line.hpp"
-
 // -----------------------------------------------------------------------
 // Constants.
 // -----------------------------------------------------------------------
@@ -28,8 +26,11 @@ const double SIXTY_DEG_IN_RAD = 3.14159f / 3.0f;
 // Globals.
 // -----------------------------------------------------------------------
 
-// The list of lines to manipulate / draw.
-std::vector<Line> g_lines;
+// The list of points that make up the lines.
+std::vector<Gdiplus::PointF> g_points;
+
+// Pen used to draw lines.
+Gdiplus::Pen* g_linePen;
 
 // -----------------------------------------------------------------------
 
@@ -37,10 +38,10 @@ void
 InitGeometry();
 
 void
-SplitLine(const Line& line, std::vector<Line>& dest);
+SplitLine(const Gdiplus::PointF& a, const Gdiplus::PointF& b, std::vector<Gdiplus::PointF>& dest);
 
 void
-BuildTriangle(const Line& base, std::vector<Line>& dest);
+BuildTriangle(const Gdiplus::PointF& a, const Gdiplus::PointF& b, std::vector<Gdiplus::PointF>& dest);
 
 void
 Iterate();
@@ -60,6 +61,13 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
     ULONG_PTR gdiplusToken;
 
     Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+
+    // Build the pen we'll be drawing the line with. Use a horizontal linear gradient.
+    g_linePen = new Gdiplus::Pen(&Gdiplus::LinearGradientBrush(Gdiplus::PointF(100.0f, 10.0f), Gdiplus::PointF(700.0f, 10.0f), Gdiplus::Color(255, 0, 255, 0), Gdiplus::Color(255, 0, 0, 255)),
+                                 3.0f);
+    // Round caps, so the lines blend together nicely.
+    g_linePen->SetStartCap(Gdiplus::LineCapRound);
+    g_linePen->SetEndCap(Gdiplus::LineCapRound);
 
     InitGeometry();
 
@@ -105,8 +113,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
         }
     }
 
-    // XXX: Need to clear out the vector, so the m_pen destructors run before we shutdown GDI+.
-    g_lines.clear();
+    g_linePen;
 
     Gdiplus::GdiplusShutdown(gdiplusToken);
 
@@ -118,45 +125,37 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
 void
 InitGeometry()
 {
-    // Initialize our lines.
-    g_lines.push_back(Line(Gdiplus::PointF(200.0f, 500.0f), Gdiplus::PointF(400.0f, 100.0f), Gdiplus::Color(255, 255, 0, 0)));
-    g_lines.push_back(Line(Gdiplus::PointF(400.0f, 100.0f), Gdiplus::PointF(600.0f, 500.0f), Gdiplus::Color(255, 0, 255, 0)));
-    g_lines.push_back(Line(Gdiplus::PointF(600.0f, 500.0f), Gdiplus::PointF(200.0f, 500.0f), Gdiplus::Color(255, 0, 0, 255)));
+    g_points.push_back(Gdiplus::PointF(200.0f, 500.0f));
+    g_points.push_back(Gdiplus::PointF(400.0f, 100.0f));
+    g_points.push_back(Gdiplus::PointF(600.0f, 500.0f));
+    g_points.push_back(Gdiplus::PointF(200.0f, 500.0f));
 }
 
 // -----------------------------------------------------------------------
 
 void
-SplitLine(const Line& line, std::vector<Line>& dest)
+SplitLine(const Gdiplus::PointF& a, const Gdiplus::PointF& b, std::vector<Gdiplus::PointF>& dest)
 {
-    Gdiplus::Color color;
-    line.getColor(color);
+    Gdiplus::PointF delta((b.X - a.X) / 3.0f, (b.Y - a.Y) / 3.0f);
 
-    Gdiplus::PointF p1 = line.p1;
-    Gdiplus::PointF p2 = line.p2;
+    Gdiplus::PointF p1 = a + delta;
+    Gdiplus::PointF p2 = p1 + delta;
 
-    Gdiplus::PointF delta((p2.X - p1.X) / 3.0f, (p2.Y - p1.Y) / 3.0f);
-
-    Line l1(p1, p1 + delta, color);
-    Line l2(l1.p2, l1.p2 + delta, color);
-    Line l3(l2.p2, p2, color);
-
-    dest.push_back(l1);
-    BuildTriangle(l2, dest);
-    dest.push_back(l3);
+    dest.push_back(a);
+    dest.push_back(p1);
+    BuildTriangle(p1, p2, dest);
+    dest.push_back(p2);
+    dest.push_back(b);
 }
 
 // -----------------------------------------------------------------------
 
 // The name of this function is a bit misleading... we're not building a full triangle. Just the new parts to form the Koch curve.
 void
-BuildTriangle(const Line& base, std::vector<Line>& dest)
+BuildTriangle(const Gdiplus::PointF& a, const Gdiplus::PointF& b, std::vector<Gdiplus::PointF>& dest)
 {
-    Gdiplus::Color color;
-    base.getColor(color);
-
-    float deltaX = base.p2.X - base.p1.X;
-    float deltaY = base.p2.Y - base.p1.Y;
+    float deltaX = b.X - a.X;
+    float deltaY = b.Y - a.Y;
     float length = ::sqrtf((deltaX * deltaX) + (deltaY * deltaY));
     
     /*
@@ -168,14 +167,10 @@ BuildTriangle(const Line& base, std::vector<Line>& dest)
     float t = ::atan2f(deltaY / 2.0f, deltaX / 2.0f) - SIXTY_DEG_IN_RAD;
 
     // With the angle in hand, we can locate the missing top of our triangle.
-    Gdiplus::PointF topPoint(base.p1.X + (length * ::cosf(t)),
-                             base.p1.Y + (length * ::sinf(t)));
+    Gdiplus::PointF topPoint(a.X + (length * ::cosf(t)),
+                             a.Y + (length * ::sinf(t)));
 
-    Line l1(base.p1, topPoint, color);
-    Line l2(topPoint, base.p2, color);
-
-    dest.push_back(l1);
-    dest.push_back(l2);
+    dest.push_back(topPoint);
 }
 
 // -----------------------------------------------------------------------
@@ -184,12 +179,12 @@ BuildTriangle(const Line& base, std::vector<Line>& dest)
 void
 Iterate()
 {
-        std::vector<Line> newLines;
-        for (auto i = g_lines.begin(); i != g_lines.end(); ++i) {
-            SplitLine(*i, newLines);
+        std::vector<Gdiplus::PointF> newPoints;
+        for (int i = 0; i < g_points.size() - 1; ++i) {
+            SplitLine(g_points[i], g_points[i + 1], newPoints);
         }
 
-        g_lines = newLines;
+        g_points = newPoints;
 }
 
 // -----------------------------------------------------------------------
@@ -222,7 +217,7 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
             break;
 
         case VK_ESCAPE:
-            g_lines.clear();
+            g_points.clear();
             InitGeometry();
             InvalidateRect(hWnd, 0, TRUE);
             break;
@@ -244,8 +239,6 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 void
 OnPaint(HDC hdc)
 {
-    std::vector<Line>::iterator i;
-    for (i = g_lines.begin(); i != g_lines.end(); ++i) {
-        i->draw(hdc);
-    }
+    Gdiplus::Graphics graphics(hdc);
+    graphics.DrawLines(g_linePen, g_points.data(), g_points.size());
 }
