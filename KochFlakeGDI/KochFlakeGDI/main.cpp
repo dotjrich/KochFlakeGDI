@@ -29,9 +29,8 @@ const double SIXTY_DEG_IN_RAD = 3.14159f / 3.0f;
 // The list of points that make up the lines.
 std::vector<Gdiplus::PointF> g_points;
 
-// Pen used to draw lines.
-Gdiplus::Pen* g_linePen;
-
+// -----------------------------------------------------------------------
+// Prototypes.
 // -----------------------------------------------------------------------
 
 void
@@ -61,13 +60,6 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
     ULONG_PTR gdiplusToken;
 
     Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-
-    // Build the pen we'll be drawing the line with. Use a horizontal linear gradient.
-    g_linePen = new Gdiplus::Pen(&Gdiplus::LinearGradientBrush(Gdiplus::PointF(100.0f, 10.0f), Gdiplus::PointF(700.0f, 10.0f), Gdiplus::Color(255, 0, 255, 0), Gdiplus::Color(255, 0, 0, 255)),
-                                 3.0f);
-    // Round caps, so the lines blend together nicely.
-    g_linePen->SetStartCap(Gdiplus::LineCapRound);
-    g_linePen->SetEndCap(Gdiplus::LineCapRound);
 
     InitGeometry();
 
@@ -112,8 +104,6 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdS
         } else {
         }
     }
-
-    g_linePen;
 
     Gdiplus::GdiplusShutdown(gdiplusToken);
 
@@ -239,6 +229,13 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 void
 OnPaint(HDC hdc)
 {
+    // Pen used to draw lines. Use a horizontal linear gradient.
+    Gdiplus::Pen linePen(&Gdiplus::LinearGradientBrush(Gdiplus::PointF(100.0f, 10.0f), Gdiplus::PointF(700.0f, 10.0f), Gdiplus::Color(255, 255, 0, 0), Gdiplus::Color(255, 0, 0, 255)),
+                         3.0f);
+    // Round caps, so the lines blend together nicely.
+    linePen.SetStartCap(Gdiplus::LineCapRound);
+    linePen.SetEndCap(Gdiplus::LineCapRound);
+
     Gdiplus::Graphics graphics(hdc);
-    graphics.DrawLines(g_linePen, g_points.data(), g_points.size());
+    graphics.DrawLines(&linePen, g_points.data(), g_points.size());
 }
