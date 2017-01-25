@@ -20,6 +20,8 @@ const TCHAR WINDOW_TITLE[] = _T("Koch Flake GDI+");
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 800;
 
+const TCHAR INSTRUCTIONS_STRING[] = _T("Press <SPACE> to iterate.  Press <ESC> to reset.");
+
 const double SIXTY_DEG_IN_RAD = 3.14159f / 3.0f;
 
 // -----------------------------------------------------------------------
@@ -229,6 +231,23 @@ WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 void
 OnPaint(HDC hdc)
 {
+    Gdiplus::Graphics graphics(hdc);
+
+    // Build font to use for drawing instructions.
+    Gdiplus::FontFamily fontFamily(L"Courier New");
+    Gdiplus::Font font(&fontFamily, 16, Gdiplus::FontStyleRegular, Gdiplus::UnitPixel);
+    // The rectangle that will contain the font (needed for alignment).
+    Gdiplus::RectF instructionsRect(5.0f, 5.0f, WINDOW_WIDTH, 40.0f);
+    // This format will be applied within the rectangle created above.
+    Gdiplus::StringFormat stringFormat;
+    stringFormat.SetAlignment(Gdiplus::StringAlignmentCenter);
+    stringFormat.SetLineAlignment(Gdiplus::StringAlignmentCenter);
+    // Brush used for drawing the text.
+    Gdiplus::SolidBrush instructionsBrush(Gdiplus::Color(255, 245, 205, 73));
+
+    // Draw instructions.
+    graphics.DrawString(INSTRUCTIONS_STRING, -1, &font, instructionsRect, &stringFormat, &instructionsBrush);
+
     // Pen used to draw lines. Use a horizontal linear gradient.
     Gdiplus::Pen linePen(&Gdiplus::LinearGradientBrush(Gdiplus::PointF(100.0f, 10.0f), Gdiplus::PointF(700.0f, 10.0f), Gdiplus::Color(255, 255, 0, 0), Gdiplus::Color(255, 0, 0, 255)),
                          3.0f);
@@ -236,6 +255,6 @@ OnPaint(HDC hdc)
     linePen.SetStartCap(Gdiplus::LineCapRound);
     linePen.SetEndCap(Gdiplus::LineCapRound);
 
-    Gdiplus::Graphics graphics(hdc);
+    // Draw curve.
     graphics.DrawLines(&linePen, g_points.data(), g_points.size());
 }
