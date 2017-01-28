@@ -246,6 +246,7 @@ void
 OnPaint(HDC hdc)
 {
     Gdiplus::Graphics graphics(hdc);
+    graphics.SetSmoothingMode(Gdiplus::SmoothingMode::SmoothingModeAntiAlias);
 
     // Build font to use for drawing instructions.
     Gdiplus::FontFamily fontFamily(L"Courier New");
@@ -263,8 +264,7 @@ OnPaint(HDC hdc)
     graphics.DrawString(INSTRUCTIONS_STRING, -1, &font, instructionsRect, &stringFormat, &instructionsBrush);
 
     // Pen used to draw lines. Use a horizontal linear gradient.
-    Gdiplus::Pen linePen(&Gdiplus::LinearGradientBrush(Gdiplus::PointF(100.0f, 10.0f), Gdiplus::PointF(700.0f, 10.0f), Gdiplus::Color(255, 255, 0, 0), Gdiplus::Color(255, 0, 0, 255)),
-                         3.0f);
+    Gdiplus::Pen linePen(&Gdiplus::LinearGradientBrush(Gdiplus::PointF(100.0f, 10.0f), Gdiplus::PointF(700.0f, 10.0f), Gdiplus::Color(255, 255, 0, 0), Gdiplus::Color(255, 0, 0, 255)));
     // Round caps, so the lines blend together nicely.
     linePen.SetStartCap(Gdiplus::LineCapRound);
     linePen.SetEndCap(Gdiplus::LineCapRound);
