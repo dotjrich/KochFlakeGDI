@@ -22,7 +22,7 @@ const int WINDOW_HEIGHT = 800;
 
 const TCHAR INSTRUCTIONS_STRING[] = _T("Press <SPACE> to iterate.  Press <ESC> to reset.");
 
-const double SIXTY_DEG_IN_RAD = 3.14159f / 3.0f;
+const float SIXTY_DEG_IN_RAD = 3.14159f / 3.0f;
 
 // -----------------------------------------------------------------------
 // Globals.
@@ -125,6 +125,20 @@ InitGeometry()
 
 // -----------------------------------------------------------------------
 
+/*
+ Splits a line up like so:
+
+ Original:
+  --------------
+
+ New:
+        p3
+        /\
+       /  \
+  ----p1  p2----
+
+ Note: p1 and p2 are generated here. p3 is generated in BuildTriangle.
+*/
 void
 SplitLine(const Gdiplus::PointF& a, const Gdiplus::PointF& b, std::vector<Gdiplus::PointF>& dest)
 {
@@ -151,12 +165,12 @@ BuildTriangle(const Gdiplus::PointF& a, const Gdiplus::PointF& b, std::vector<Gd
     float length = ::sqrtf((deltaX * deltaX) + (deltaY * deltaY));
     
     /*
-        Some explaining...
-        atan2 will give us the angle between X+ and the specified point.
-        In this case, we're passing in the midpoint of our segment.
-        We're then rotating it 60 deg. This will lead us to the missing point of our triangle.
+        Some notes:
+        atan2 is being used because it can properly handle all four quadrants.
+        We're passing in the slope of the line that's being replaced with the 2 other sides of the triangle.
+        We're then rotating that angle by -60 deg. Why negative? Because Y+ faces downward in GDI coordinates.
     */
-    float t = ::atan2f(deltaY / 2.0f, deltaX / 2.0f) - SIXTY_DEG_IN_RAD;
+    float t = ::atan2f(deltaY, deltaX) - SIXTY_DEG_IN_RAD;
 
     // With the angle in hand, we can locate the missing top of our triangle.
     Gdiplus::PointF topPoint(a.X + (length * ::cosf(t)),
